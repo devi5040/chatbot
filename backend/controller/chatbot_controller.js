@@ -1,57 +1,28 @@
 //importing dotenv to use environment variables
 require("dotenv").config();
-const axios = require("axios");
+//importing cohere-ai for using cohere
 const cohere = require("cohere-ai");
 
-const api_key = process.env.COHERE_TOKEN;
+//initializing cohere client and also chat history to empty array
 let cohereClient = new cohere.CohereClient(process.env.CO_API_KEY);
 let history = [];
 
 module.exports = {
-  giveResponse: async (req, res) => {
-    const { question } = req.body;
-
-    // Let's start with importing `NlpManager` from `node-nlp`. This will be responsible for training, saving, loading and processing.
-    const { NlpManager } = require("node-nlp");
-    console.log("Starting Chatbot ...");
-    // Creating new Instance of NlpManager class.
-    const manager = new NlpManager({ languages: ["en"] });
-    // Loading our saved model
-    manager.load();
-    const response = await manager.process("en", question);
-    res.status(200).json(response.answer);
-    // Loading a module readline, this will be able to take input from the terminal.
-    // var readline = require("readline");
-    // var rl = readline.createInterface(process.stdin, process.stdout);
-    // console.log("Chatbot started!");
-    // res.send("<h1>Chatbot started!</h1>");
-    // rl.setPrompt("> ");
-    // rl.prompt();
-    // rl.on("line", async function (line) {
-    //   // Here Passing our input text to the manager to get response and display response answer.
-
-    //   rl.prompt();
-    // }).on("close", function () {
-    //   process.exit(0);
-    // });
-  },
   provideResponse: async (req, res) => {
-    //console.log("Inside provideresponse");
-
     const { question } = req.body;
-    console.log(question);
+    //add user input for history
     history.push({ role: "USER", message: question });
+
+    //condition to clear history and respond with welcome message when user hits clear chat
     if (question === "exit") {
       history = [];
       return res
         .status(200)
         .json("Hi Dear!\n Ask me anything on hospital appointment booking");
     }
-    //const client = new CohereClient({ token: api_key });
 
     try {
-      console.log(history);
-      // const client = cohere.init(api_key);
+      //start the chat by sending request for cohere ai
       const responseData = await cohereClient.chat({
         message: question,
         model: "command-r-08-2024",
@@ -60,14 +31,15 @@ module.exports = {
         chatHistory: history,
         temperature: 0.8,
       });
-      console.log("====================================", responseData);
-      history = responseData.chatHistory;
 
+      //update the chat history with bot response
+      history = responseData.chatHistory;
       res.status(200).json(responseData.text);
     } catch (error) {
-      console.log("====================================");
       console.log(error);
-      console.log("====================================");
+      res
+        .status(500)
+        .json("There has been some error please contact the admin");
     }
   },
 };

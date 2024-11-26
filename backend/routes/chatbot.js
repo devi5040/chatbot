@@ -1,3 +1,4 @@
+//importing router to set routes
 const Router = require("express").Router();
 const chatbotController = require("../controller/chatbot_controller");
 

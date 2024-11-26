@@ -5,6 +5,7 @@ const Chat = ({ closeHandler }) => {
   const [messages, setMessages] = useState([]); // Stores chat messages
   const [newMessage, setNewMessage] = useState(""); // Stores current message input
 
+  //send welcome message at the starting
   useEffect(() => {
     setMessages([
       {
@@ -13,8 +14,10 @@ const Chat = ({ closeHandler }) => {
       },
     ]);
   }, []);
+
   // Function to handle sending a message
   const sendMessage = async (e) => {
+    //prevent the default behaviour of submit
     e.preventDefault();
     const question = e.target.user.value;
     const queryDetails = {
@@ -31,9 +34,6 @@ const Chat = ({ closeHandler }) => {
         "http://localhost:3000/chatbot/chatbot-response",
         queryDetails
       );
-      console.log("====================================");
-      console.log(response);
-      console.log("====================================");
       setMessages((prevMessages) => [
         ...prevMessages,
         { text: response.data, sender: "Bot" },
@@ -41,10 +41,12 @@ const Chat = ({ closeHandler }) => {
     }
   };
 
+  //this will handle the close button handler
   const clickCloseHandler = () => {
     closeHandler(true);
   };
 
+  //handle the delete button click
   const deleteChatHandler = async () => {
     let exitResponse = await axios.post(
       "http://localhost:3000/chatbot/chatbot-response",
